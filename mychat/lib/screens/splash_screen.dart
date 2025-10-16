@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mychat/api/api.dart';
 import 'package:mychat/screens/auth/login_screens.dart';
 import 'package:mychat/screens/home_screen.dart';
 
@@ -20,9 +21,17 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     Future.delayed(const Duration(milliseconds: 1500), (){
       setState(() {
-        Navigator.pushReplacement(
-            context,MaterialPageRoute(builder: (_)=> const LoginScreen())
-        );
+        if(APIs.auth.currentUser!=null){
+          Navigator.pushReplacement(
+              context,MaterialPageRoute(builder: (_)=> const HomeScreen())
+          );
+        }
+        else{
+          Navigator.pushReplacement(
+              context,MaterialPageRoute(builder: (_)=> const LoginScreen())
+          );
+        }
+
       }
       );
 
