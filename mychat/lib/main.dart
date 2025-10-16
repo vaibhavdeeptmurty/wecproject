@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mychat/screens/auth/login_screens.dart';
 import 'package:mychat/screens/splash_screen.dart';
 import 'package:mychat/themes/light_mode.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,8 +18,10 @@ void main() {
   // fix portrait orientation
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp,DeviceOrientation.portraitDown]
-  ).then((value){
-    _initializeFirebase();
+  ).then((value) async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     runApp(const MyApp());
   }
   );

@@ -18,6 +18,8 @@ dependencies:
 #  for google sign-in
 #  using old version bcz i was unable to resolve error GoogleSignInException(code GoogleSignInExceptionCode.clientConfigurationError, serverClientId must be provided on Android, null)
   google_sign_in: ^5.4.2
+#  cloud firestore database
+  cloud_firestore: ^6.0.3
 
 
 
