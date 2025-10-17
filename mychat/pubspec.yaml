@@ -20,7 +20,9 @@ dependencies:
   google_sign_in: ^5.4.2
 #  cloud firestore database
   cloud_firestore: ^6.0.3
-
+# for user profile picture
+  path_provider: ^2.1.5
+  cached_network_image: ^3.4.1
 
 
   cupertino_icons: ^1.0.8
