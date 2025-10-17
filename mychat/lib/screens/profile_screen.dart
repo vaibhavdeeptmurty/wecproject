@@ -6,8 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mychat/api/api.dart';
+import 'package:mychat/helper/dialogs.dart';
 import 'package:mychat/main.dart';
 import 'package:mychat/models/chat_user.dart';
+import 'package:mychat/screens/auth/login_screens.dart';
 
 
 
@@ -37,8 +39,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.only(left: 0,top: 0,right: 10,bottom: 15),
         child: FloatingActionButton.extended(
           onPressed: () async {
-            await APIs.auth.signOut();
-            await GoogleSignIn().signOut();
+            // FOR SHOWING PROGRESS DIALOG
+            Dialogs.showProgressBar(context);
+            // SIGN OUT FROM APP
+            await APIs.auth.signOut().then((value) async {
+              await GoogleSignIn().signOut().then((value){
+                // FOR HIDING PROGRESS DIALOG
+                Navigator.pop(context);
+                // FOR REMOVING HOME SCREEN
+                Navigator.pop(context);
+                Navigator.pushReplacement(
+                    context, MaterialPageRoute(builder: (_)=>LoginScreen())
+                );
+              });
+            });
+
           },
           backgroundColor: Colors.red.shade800,
           label: const Text('Sign Out'),
@@ -53,14 +68,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(width: mq.width, height: mq.height*0.04,
                       ),
             // USER PROFILE PICTURE
-            ClipOval(
-              child: CachedNetworkImage(
-                width: mq.height*0.2,
-                height:mq.height*0.2,
-                fit: BoxFit.fill,
-                imageUrl: widget.user.image,
-                errorWidget: (context, url, error) => const Icon(CupertinoIcons.person),
-              ),
+            Stack(
+              children: [
+                ClipOval(
+                  child: CachedNetworkImage(
+                    width: mq.height*0.2,
+                    height:mq.height*0.2,
+                    fit: BoxFit.fill,
+                    imageUrl: widget.user.image,
+                    errorWidget: (context, url, error) => const Icon(CupertinoIcons.person),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: MaterialButton(
+                    onPressed: (){},
+                    elevation: 1,
+                    color: Theme.of(context).colorScheme.tertiary,
+                    shape: const CircleBorder(),
+                    child: const Icon(Icons.edit),),
+                )
+              ],
             ),
             SizedBox(width: mq.width, height: mq.height*0.04),
             // USER EMAIL
