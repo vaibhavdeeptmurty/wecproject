@@ -6,6 +6,7 @@ import 'package:mychat/api/api.dart';
 import 'package:mychat/helper/dialogs.dart';
 import 'package:mychat/screens/home_screen.dart';
 import '../../main.dart';
+import 'dart:developer';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -40,17 +41,23 @@ class _LoginScreenState extends State<LoginScreen> {
   _handleGoogleButtonClick(){
     // show progress bar
     Dialogs.showProgressBar(context);
-    _signInWithGoogle().then((user){
+    _signInWithGoogle().then((user) async {
       // Remove progressbar
       Navigator.pop(context);
       if(user!=null){
-        print('USER: $user.user');
-        print('ADD INFO: $user.additionalUserInfo');
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(
-            builder: (_)=>HomeScreen()
-        )
-        );
+        log('USER: $user.user');
+        log('ADD INFO: $user.additionalUserInfo');
+        if(await APIs.userExists()){
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_)=>const HomeScreen()));
+        }
+        else{
+          await APIs.createUser().then((value) =>Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_)=>const HomeScreen()))
+          );
+        }
+
+
       }
     });
   }

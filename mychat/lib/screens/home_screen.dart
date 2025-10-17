@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mychat/api/api.dart';
 import 'package:mychat/models/chat_user.dart';
 import 'package:mychat/widgets/chat_user_card.dart';
@@ -33,10 +34,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       // floating add button to add new user
+      //   temp sign out button
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(left: 0,top: 0,right: 10,bottom: 15),
         child: FloatingActionButton(
-          onPressed: (){},
+          onPressed: () async {
+            await APIs.auth.signOut();
+            await GoogleSignIn().signOut();
+          },
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           child: const Icon(Icons.add),
         ),
