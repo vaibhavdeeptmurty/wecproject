@@ -3,21 +3,38 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mychat/models/chat_user.dart';
 
 class APIs{
-  // for auth
+  // STORING SELF INFO
+  static late ChatUser me;
+  // AUTH
   static FirebaseAuth auth = FirebaseAuth.instance;
-  //for firestore database
+  //FIREBASE DATABASE
   static FirebaseFirestore firestore = FirebaseFirestore.instance;
-//   for checking if user exists
+//   CHECK IF USER EXIST
   static Future<bool> userExists()async{
     return (await firestore
         .collection('users')
-        .doc(auth.currentUser!.uid)
+        .doc(user.uid)
         .get()
     ).exists;
   }
-//   to return current user
+//   RETURN CURRENT USER
   static User get user => auth.currentUser!;
-//   for creating new user
+  // FOR GETTING SELF INFO
+  static Future<void> getSelfInfo()async{
+    await firestore
+        .collection('users')
+        .doc(auth.currentUser!.uid)
+        .get().then((user) async {
+          if(user.exists){
+            me = ChatUser.fromJson(user.data()!);
+          }
+          else{
+            await createUser().then((value)=>getSelfInfo());
+          }
+    });
+
+  }
+//   CREATING NEW USER
   static Future<void> createUser()async{
     final time = DateTime.now().microsecondsSinceEpoch.toString();
     final chatUser = ChatUser(
@@ -37,4 +54,21 @@ class APIs{
         .doc(user.uid)
         .set(chatUser.toJson());
   }
+
+  // FOR GETTING ALL USERS FROM FIREBASE DATABASE
+  static Stream<QuerySnapshot<Map<String, dynamic>>>  getAllUsers() {
+    return firestore.collection('users').where('id', isNotEqualTo: user.uid).snapshots();
+  }
+
+  // FOR UPDATING USER INFO
+  static Future<void> updateUserInfo()async{
+    await firestore
+        .collection('users')
+        .doc(user.uid)
+        .update({
+      'name': me.name,
+      'about': me.about,
+    });
+  }
+
 }
