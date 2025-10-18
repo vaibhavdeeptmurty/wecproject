@@ -1,12 +1,10 @@
-
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mychat/api/api.dart';
 import 'package:mychat/models/chat_user.dart';
 import 'package:mychat/screens/profile_screen.dart';
 import 'package:mychat/widgets/chat_user_card.dart';
+
 import '../../main.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,46 +17,88 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
-
     super.initState();
     APIs.getSelfInfo();
   }
 
-    List<ChatUser>list =[];
+  // FOR STORING ALL THE USERS
+  List<ChatUser> _list = [];
+
+  // FOR STORING SEARCHED ITEMS
+  final List<ChatUser> _searchList = [];
+  //FOR STORING SEARCH STATUS
+  bool _isSearching = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const Icon(CupertinoIcons.home),
-        title: const Text('MyChat'),
-        actions: [
-          // search button
-          IconButton(onPressed: (){}, icon: const Icon(Icons.search)),
-          // more button
-          IconButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (_)=> ProfileScreen(user: APIs.me,)));
-          }, icon: const Icon(Icons.more_vert))
-        ],
-      ),
-      // floating add button to add new user
-      //   temp sign out button
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(left: 0,top: 0,right: 10,bottom: 15),
-        child: FloatingActionButton(
-          onPressed: () async {
-            await APIs.auth.signOut();
-            await GoogleSignIn().signOut();
-          },
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          child: const Icon(Icons.add),
+        appBar: AppBar(
+          leading: const Icon(CupertinoIcons.home),
+          title: _isSearching
+              ? TextField(
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.tertiary),
+                  autofocus: true,
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Name, email ..',
+                      hintStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary)),
+                  // WHEN SEARCHED TEXT CHANGE UPDATE SEARCH LIST
+                  onChanged: (val) {
+                    // SEARCH LOGIC
+                    _searchList.clear();
+                    for (var i in _list) {
+                      if (i.name.toLowerCase().contains(val.toLowerCase()) ||
+                          i.email.toLowerCase().contains(val.toLowerCase())) {
+                        _searchList.add(i);
+                      }
+                      setState(() {
+                        _searchList;
+                      });
+                    }
+                  },
+                )
+              : const Text('MyChat'),
+          actions: [
+            // search button
+            IconButton(
+                onPressed: () {
+                  setState(() {
+                    _isSearching = !_isSearching;
+                  });
+                },
+                icon: Icon(_isSearching
+                    ? CupertinoIcons.clear_circled
+                    : Icons.search)),
+            // more button
+            IconButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ProfileScreen(
+                                user: APIs.me,
+                              )));
+                },
+                icon: const Icon(Icons.more_vert))
+          ],
         ),
-      ),
-      body: StreamBuilder(
-          
+        // floating add button to add new user
+
+        floatingActionButton: Padding(
+          padding:
+              const EdgeInsets.only(left: 0, top: 0, right: 10, bottom: 15),
+          child: FloatingActionButton(
+            onPressed: () async {},
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            child: const Icon(Icons.add),
+          ),
+        ),
+        body: StreamBuilder(
           stream: APIs.getAllUsers(),
-          builder: (context,snapshot){
-            switch(snapshot.connectionState) {
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
               // for loading data
               case ConnectionState.none:
               case ConnectionState.waiting:
@@ -67,23 +107,28 @@ class _HomeScreenState extends State<HomeScreen> {
               case ConnectionState.active:
               case ConnectionState.done:
                 final data = snapshot.data?.docs;
-                list = data?.map((e)=>ChatUser.fromJson(e.data())).toList()?? [];
+                _list =
+                    data?.map((e) => ChatUser.fromJson(e.data())).toList() ??
+                        [];
 
-                if(list.isNotEmpty){
+                if (_list.isNotEmpty) {
                   return ListView.builder(
-                      itemCount: list.length,
-                      padding: EdgeInsets.only(top: mq.height*0.01),
+                      itemCount:
+                          _isSearching ? _searchList.length : _list.length,
+                      padding: EdgeInsets.only(top: mq.height * 0.01),
                       physics: const BouncingScrollPhysics(),
-                      itemBuilder: (context,index){
-                        return ChatUserCard(user: list[index],);
+                      itemBuilder: (context, index) {
+                        return ChatUserCard(
+                          user:
+                              _isSearching ? _searchList[index] : _list[index],
+                        );
                         // return Text('Name: ${list[0]}');
                       });
-                }
-                else{
+                } else {
                   return const Center(child: Text('No connection found!'));
                 }
             }
-      }, )
-    );
+          },
+        ));
   }
 }

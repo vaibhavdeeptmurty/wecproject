@@ -142,7 +142,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         minimumSize: Size(mq.width*0.4, mq.height*0.05),elevation: 5,backgroundColor: Theme.of(context).colorScheme.secondary),
                       onPressed: (){
                       if(_formKey.currentState!.validate()){
-                        log('message');
                         _formKey.currentState?.save();
                        APIs.updateUserInfo().then((value){
                          Dialogs.showSnackBar(context, 'Profile Updated');
