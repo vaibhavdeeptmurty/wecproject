@@ -91,4 +91,11 @@ class APIs {
       });
     }
   }
+
+  ///**********CHAT SCREEN RELATED APIs*****************
+
+  // FOR GETTING ALL MESSAGES OF SPECIFIC USER FROM FIREBASE DATABASE
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessages() {
+    return firestore.collection('messages').snapshots();
+  }
 }
