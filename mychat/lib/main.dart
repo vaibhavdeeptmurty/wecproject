@@ -1,32 +1,25 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mychat/screens/splash_screen.dart';
 import 'package:mychat/themes/light_mode.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'firebase_options.dart';
-
-
 
 // global object for accessing device size
 late Size mq;
-
-
-
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   // fix portrait orientation
   SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp,DeviceOrientation.portraitDown]
-  ).then((value) async {
+          [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown])
+      .then((value) async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
     runApp(const MyApp());
-  }
-  );
-
-
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -46,4 +39,3 @@ _initializeFirebase() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 }
-
