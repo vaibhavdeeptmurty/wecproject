@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mychat/api/api.dart';
 import 'package:mychat/models/chat_user.dart';
 import 'package:mychat/models/message.dart';
+import 'package:mychat/widgets/profile_dialog.dart';
 
 import '../helper/my_date_util.dart';
 import '../main.dart';
@@ -44,13 +45,22 @@ class _ChatUserCardState extends State<ChatUserCard> {
                 }
                 return ListTile(
                   // profile pic
-                  leading: ClipOval(
-                    child: CachedNetworkImage(
-                      width: mq.height * 0.05,
-                      height: mq.height * 0.05,
-                      imageUrl: widget.user.image,
-                      errorWidget: (context, url, error) =>
-                          const Icon(CupertinoIcons.person),
+                  leading: InkWell(
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (_) => ProfileDialog(
+                                user: widget.user,
+                              ));
+                    },
+                    child: ClipOval(
+                      child: CachedNetworkImage(
+                        width: mq.height * 0.05,
+                        height: mq.height * 0.05,
+                        imageUrl: widget.user.image,
+                        errorWidget: (context, url, error) =>
+                            const Icon(CupertinoIcons.person),
+                      ),
                     ),
                   ),
                   // user name

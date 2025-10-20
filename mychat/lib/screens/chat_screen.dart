@@ -5,8 +5,10 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mychat/helper/my_date_util.dart';
 import 'package:mychat/models/chat_user.dart';
 import 'package:mychat/models/message.dart';
+import 'package:mychat/screens/view_profile_screen.dart';
 import 'package:mychat/widgets/message_card.dart';
 
 import '../api/api.dart';
@@ -123,54 +125,74 @@ class _ChatScreenState extends State<ChatScreen> {
   // APP BAR
   Widget _appBar() {
     return InkWell(
-      onTap: () {},
-      child: Row(
-        children: [
-          // BACK BTN
-          IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.arrow_back_ios_new),
-            color: Theme.of(context).colorScheme.secondary,
-          ),
-          //
-          // USER PROFILE PICTURE
-          ClipOval(
-            child: CachedNetworkImage(
-              width: mq.height * 0.045,
-              height: mq.height * 0.045,
-              imageUrl: widget.user.image,
-              errorWidget: (context, url, error) =>
-                  const Icon(CupertinoIcons.person),
-            ),
-          ),
-          // ADDING EXTRA SPACE
-          const SizedBox(
-            width: 10,
-          ),
-          // NAME OF USER
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => ViewProfileScreen(user: widget.user)));
+      },
+      child: StreamBuilder(
+        stream: APIs.getUserInfo(widget.user),
+        builder: (context, snapshot) {
+          final data = snapshot.data?.docs;
+          final list =
+              data?.map((e) => ChatUser.fromJson(e.data())).toList() ?? [];
+
+          return Row(
             children: [
-              Text(
-                widget.user.name,
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.tertiary),
+              // BACK BTN
+              IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.arrow_back_ios_new),
+                color: Theme.of(context).colorScheme.secondary,
               ),
-              // LAST SEEN/TYPING
-              const Text(
-                'Last seen not available',
-                style: TextStyle(
-                  fontSize: 14,
+              //
+              // USER PROFILE PICTURE
+              ClipOval(
+                child: CachedNetworkImage(
+                  width: mq.height * 0.045,
+                  height: mq.height * 0.045,
+                  imageUrl: list.isNotEmpty ? list[0].image : widget.user.image,
+                  errorWidget: (context, url, error) =>
+                      const Icon(CupertinoIcons.person),
                 ),
+              ),
+              // ADDING EXTRA SPACE
+              const SizedBox(
+                width: 10,
+              ),
+              // NAME OF USER
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    list.isNotEmpty ? list[0].name : widget.user.name,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.tertiary),
+                  ),
+                  // LAST SEEN/TYPING
+                  Text(
+                    list.isNotEmpty
+                        ? list[0].isOnline
+                            ? 'online'
+                            : MyDateUtil.getLastActiveTime(
+                                context, list[0].lastActive)
+                        : MyDateUtil.getLastActiveTime(
+                            context, widget.user.lastActive),
+                    style: const TextStyle(
+                      fontSize: 14,
+                    ),
+                  )
+                ],
               )
             ],
-          )
-        ],
+          );
+        },
       ),
     );
   }

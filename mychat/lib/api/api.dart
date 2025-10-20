@@ -39,7 +39,7 @@ class APIs {
 
 //   CREATING NEW USER
   static Future<void> createUser() async {
-    final time = DateTime.now().microsecondsSinceEpoch.toString();
+    final time = DateTime.now().millisecondsSinceEpoch.toString();
     final chatUser = ChatUser(
         image: user.photoURL.toString(),
         name: user.displayName.toString(),
@@ -93,12 +93,30 @@ class APIs {
     }
   }
 
+  // GETTING SPECIFIC USER INFO
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(
+      ChatUser chatUser) {
+    return firestore
+        .collection('users')
+        .where('id', isEqualTo: chatUser.id)
+        .snapshots();
+  }
+
+  // UPDATE ONLINE / LAST ACTIVE STATUS OF USER
+  static Future<void> updateActiveStatus(bool isOnline) async {
+    firestore.collection('users').doc(user.uid).update({
+      'is_online': isOnline,
+      'last_active': DateTime.now().millisecondsSinceEpoch.toString()
+    });
+  }
+
   ///**********CHAT SCREEN RELATED APIs*****************
 
   // GETTING CONV ID
   static String getConversationId(String id) => user.uid.hashCode <= id.hashCode
       ? '${user.uid}_$id'
       : '${id}_${user.uid}';
+
   // FOR GETTING ALL MESSAGES OF SPECIFIC USER FROM FIREBASE DATABASE
   static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessages(
       ChatUser user) {

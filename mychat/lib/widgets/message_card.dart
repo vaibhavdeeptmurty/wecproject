@@ -57,10 +57,8 @@ class _MessageCardState extends State<MessageCard> {
                         color: Theme.of(context).colorScheme.primary),
                   )
                 : ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(20),
                     child: CachedNetworkImage(
-                      width: mq.height * 0.05,
-                      height: mq.height * 0.05,
                       imageUrl: widget.message.msg,
                       placeholder: (context, url) =>
                           const CircularProgressIndicator(

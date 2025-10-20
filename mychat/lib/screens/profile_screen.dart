@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -43,6 +44,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () async {
               // FOR SHOWING PROGRESS DIALOG
               Dialogs.showProgressBar(context);
+
+              // UPDATE STATUS TO OFFLINE
+              APIs.updateActiveStatus(false);
               // SIGN OUT FROM APP
               await APIs.auth.signOut().then((value) async {
                 await GoogleSignIn().signOut().then((value) {
@@ -50,6 +54,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Navigator.pop(context);
                   // FOR REMOVING HOME SCREEN
                   Navigator.pop(context);
+
+                  APIs.auth = FirebaseAuth.instance;
                   Navigator.pushReplacement(context,
                       MaterialPageRoute(builder: (_) => LoginScreen()));
                 });
