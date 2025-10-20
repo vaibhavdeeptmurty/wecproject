@@ -1,12 +1,13 @@
 import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mychat/api/api.dart';
 import 'package:mychat/helper/dialogs.dart';
 import 'package:mychat/screens/home_screen.dart';
+
 import '../../main.dart';
-import 'dart:developer';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,72 +18,62 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _isAnimateText = false;
-  bool _isAnimateLoginButton =false;
+  bool _isAnimateLoginButton = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    Future.delayed(const Duration(milliseconds: 1500), (){
+    Future.delayed(const Duration(milliseconds: 1500), () {
       setState(() {
-        _isAnimateText=true;
-      }
-      );
-      Future.delayed(const Duration(milliseconds: 800),(){
+        _isAnimateText = true;
+      });
+      Future.delayed(const Duration(milliseconds: 800), () {
         setState(() {
-          _isAnimateLoginButton=true;
+          _isAnimateLoginButton = true;
         });
       });
-    }
-
-    );
+    });
   }
 
-  _handleGoogleButtonClick(){
+  _handleGoogleButtonClick() {
     // show progress bar
     Dialogs.showProgressBar(context);
     _signInWithGoogle().then((user) async {
       // Remove progressbar
       Navigator.pop(context);
-      if(user!=null){
-        log('USER: $user.user');
-        log('ADD INFO: $user.additionalUserInfo');
-        if(await APIs.userExists()){
+      if (user != null) {
+        if (await APIs.userExists()) {
           Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (_)=>const HomeScreen()));
+              context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+        } else {
+          await APIs.createUser().then((value) => Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_) => const HomeScreen())));
         }
-        else{
-          await APIs.createUser().then((value) =>Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (_)=>const HomeScreen()))
-          );
-        }
-
-
       }
     });
   }
 
   Future<UserCredential?> _signInWithGoogle() async {
-    try{
+    try {
       await InternetAddress.lookup('google.com');
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
       // Obtain the auth details from the request
-      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
 
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
-          idToken: googleAuth?.idToken,
-          accessToken: googleAuth?.accessToken
-      );
+          idToken: googleAuth?.idToken, accessToken: googleAuth?.accessToken);
       // Once signed in, return the UserCredential
       return await APIs.auth.signInWithCredential(credential);
-    }catch(e){
-          // Showing error to user
-          print('\n_signInWithGoogle:$e');
-          Dialogs.showSnackBar(context, 'Something went wrong! Check Internet');
-          return null;
+    } catch (e) {
+      // Showing error to user
+      print('\n_signInWithGoogle:$e');
+      Dialogs.showSnackBar(context, 'Something went wrong! Check Internet');
+      return null;
     }
   }
 
@@ -91,65 +82,53 @@ class _LoginScreenState extends State<LoginScreen> {
     mq = MediaQuery.of(context).size;
 
     return Scaffold(
-      
-      body:Stack(
+      body: Stack(
         children: [
           // App logo
           Positioned(
-            top: mq.height*.15,
-            width: mq.width*.5,
-            left: mq.width*.25,
-            child: Image.asset('images/chat.png')
-          ),
-          
+              top: mq.height * .15,
+              width: mq.width * .5,
+              left: mq.width * .25,
+              child: Image.asset('images/chat.png')),
+
           // welcome greet
-           AnimatedOpacity(
-              opacity: _isAnimateText?1:0.1,
+          AnimatedOpacity(
+              opacity: _isAnimateText ? 1 : 0.1,
               duration: const Duration(milliseconds: 1500),
               child: Center(
                   child: Text(
-                    'Welcome back, You have been missed!!',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary
-                    ),
-                  )
-              )
-          ),
+                'Welcome back, You have been missed!!',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ))),
 
           // Login with google button
           Positioned(
-              bottom: mq.height*.15,
-              width: mq.width*.7,
-              left: mq.width*.15,
-              height: mq.height*.07,
+              bottom: mq.height * .15,
+              width: mq.width * .7,
+              left: mq.width * .15,
+              height: mq.height * .07,
               child: AnimatedOpacity(
-                opacity: _isAnimateLoginButton?1:0,
+                opacity: _isAnimateLoginButton ? 1 : 0,
                 duration: const Duration(milliseconds: 1500),
                 child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondary
-                  ),
-                    onPressed: (){
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondary),
+                    onPressed: () {
                       _handleGoogleButtonClick();
                     },
-                    icon:Image.asset('images/google.png',height: mq.height*0.05,),
+                    icon: Image.asset(
+                      'images/google.png',
+                      height: mq.height * 0.05,
+                    ),
                     label: const Text(
                       'Login with Google',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 18
-                      ),
-                    )
-                ),
-              )
-          )
-
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+                    )),
+              ))
         ],
-      ) ,
-
-
+      ),
     );
   }
 }
-
-

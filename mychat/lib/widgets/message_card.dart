@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mychat/helper/my_date_util.dart';
 import 'package:mychat/models/message.dart';
 
 import '../api/api.dart';
@@ -24,6 +25,9 @@ class _MessageCardState extends State<MessageCard> {
   //
   // RECEIVED MESSAGE CARD DESIGN
   Widget _receivedMessage() {
+    if (widget.message.read.isEmpty) {
+      APIs.updateReadStatus(widget.message);
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -50,7 +54,7 @@ class _MessageCardState extends State<MessageCard> {
         Padding(
           padding: EdgeInsets.only(right: mq.width * 0.04),
           child: Text(
-            widget.message.sent,
+            MyDateUtil.getFormattedTime(context, widget.message.sent),
             style: TextStyle(
                 color: Theme.of(context).colorScheme.secondary, fontSize: 13),
           ),
@@ -68,18 +72,19 @@ class _MessageCardState extends State<MessageCard> {
           padding: EdgeInsets.only(left: mq.width * 0.04),
           child: Row(
             children: [
-              // DOUBLE TICK BLUE ICON
-              const Icon(
-                Icons.done_all,
-                color: Colors.blue,
-              ),
+              // DOUBLE TICK BLUE ICON FOR READ MSG
+              if (widget.message.read.isNotEmpty)
+                const Icon(
+                  Icons.done_all,
+                  color: Colors.blue,
+                ),
               // ADDING SOME SPACE
               const SizedBox(
                 width: 2,
               ),
               // SENT TIME
               Text(
-                '${widget.message.read}12:01AM',
+                MyDateUtil.getFormattedTime(context, widget.message.sent),
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.secondary,
                     fontSize: 13),

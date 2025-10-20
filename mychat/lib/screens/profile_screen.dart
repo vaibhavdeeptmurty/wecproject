@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -231,7 +230,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         final XFile? image = await picker.pickImage(
                             source: ImageSource.gallery, imageQuality: 80);
                         if (image != null) {
-                          log('Image Path ${image.path} -- Mime type ${image.mimeType}');
                           setState(() {
                             _image = image.path;
                           });
@@ -256,7 +254,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         final XFile? image = await picker.pickImage(
                             source: ImageSource.camera, imageQuality: 80);
                         if (image != null) {
-                          log('Image Path ${image.path}');
                           setState(() {
                             _image = image.path;
                           });
