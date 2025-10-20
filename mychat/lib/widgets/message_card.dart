@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mychat/helper/my_date_util.dart';
 import 'package:mychat/models/message.dart';
@@ -31,6 +33,7 @@ class _MessageCardState extends State<MessageCard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        // MESSAGE CONTENT
         Flexible(
           child: Container(
             decoration: BoxDecoration(
@@ -41,14 +44,32 @@ class _MessageCardState extends State<MessageCard> {
                     topRight: Radius.circular(30),
                     topLeft: Radius.circular(30),
                     bottomRight: Radius.circular(30))),
-            padding: EdgeInsets.all(mq.width * 0.04),
+            padding: EdgeInsets.all(widget.message.type == Type.image
+                ? mq.width * 0.03
+                : mq.width * 0.04),
             margin: EdgeInsets.symmetric(
                 vertical: mq.height * 0.01, horizontal: mq.width * 0.03),
-            child: Text(
-              widget.message.msg,
-              style: TextStyle(
-                  fontSize: 15, color: Theme.of(context).colorScheme.primary),
-            ),
+            child: widget.message.type == Type.text
+                ? Text(
+                    widget.message.msg,
+                    style: TextStyle(
+                        fontSize: 15,
+                        color: Theme.of(context).colorScheme.primary),
+                  )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: CachedNetworkImage(
+                      width: mq.height * 0.05,
+                      height: mq.height * 0.05,
+                      imageUrl: widget.message.msg,
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(CupertinoIcons.photo),
+                    ),
+                  ),
           ),
         ),
         Padding(
@@ -92,6 +113,7 @@ class _MessageCardState extends State<MessageCard> {
             ],
           ),
         ),
+        // MESSAGE CONTENT
         Flexible(
           child: Container(
             decoration: BoxDecoration(
@@ -100,14 +122,30 @@ class _MessageCardState extends State<MessageCard> {
                     topRight: Radius.circular(30),
                     topLeft: Radius.circular(30),
                     bottomLeft: Radius.circular(30))),
-            padding: EdgeInsets.all(mq.width * 0.04),
+            padding: EdgeInsets.all(widget.message.type == Type.image
+                ? mq.width * 0.03
+                : mq.width * 0.04),
             margin: EdgeInsets.symmetric(
                 vertical: mq.height * 0.01, horizontal: mq.width * 0.03),
-            child: Text(
-              widget.message.msg,
-              style: TextStyle(
-                  fontSize: 15, color: Theme.of(context).colorScheme.tertiary),
-            ),
+            child: widget.message.type == Type.text
+                ? Text(
+                    widget.message.msg,
+                    style: TextStyle(
+                        fontSize: 15,
+                        color: Theme.of(context).colorScheme.primary),
+                  )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: CachedNetworkImage(
+                      imageUrl: widget.message.msg,
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(CupertinoIcons.photo),
+                    ),
+                  ),
           ),
         ),
       ],

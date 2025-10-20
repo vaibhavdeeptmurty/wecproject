@@ -104,11 +104,13 @@ class APIs {
       ChatUser user) {
     return firestore
         .collection('chats/${getConversationId(user.id)}/messages/')
+        .orderBy('sent', descending: true)
         .snapshots();
   }
 
 //   FOR SENDING MESSAGE
-  static Future<void> sendMessage(ChatUser chatUser, String msg) async {
+  static Future<void> sendMessage(
+      ChatUser chatUser, String msg, Type type) async {
     // MESSAGE SENDING TIME ALSO USED AS ID
     final time = DateTime.now().millisecondsSinceEpoch.toString();
     // MESSAGE TO SEND
@@ -116,7 +118,7 @@ class APIs {
         msg: msg,
         toId: chatUser.id,
         read: '',
-        type: Type.text,
+        type: type,
         sent: time,
         fromId: user.uid);
     final ref = firestore
@@ -130,5 +132,36 @@ class APIs {
         .collection('chats/${getConversationId(message.fromId)}/messages/')
         .doc(message.sent)
         .update({'read': DateTime.now().millisecondsSinceEpoch.toString()});
+  }
+
+//   GETTING LAST MESSAGE OF SPECIFIC CHAT
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getLastMessages(
+      ChatUser user) {
+    return firestore
+        .collection('chats/${getConversationId(user.id)}/messages/')
+        .orderBy('sent', descending: true)
+        .limit(1)
+        .snapshots();
+  }
+
+  // SEND CHAT IMAGE
+  static Future<void> sendChatImage(ChatUser chatUser, File file) async {
+    final url = Uri.parse('https://api.cloudinary.com/v1_1/dgzupiivv/upload');
+
+    final request = http.MultipartRequest('POST', url)
+      ..fields['upload_preset'] = 'chat_image'
+      ..fields['folder'] = 'chats/${getConversationId(chatUser.id)}'
+      ..fields['public_id'] = '${DateTime.now().microsecondsSinceEpoch}'
+      ..files.add(await http.MultipartFile.fromPath('file', file.path));
+    // UPLOADING IMAGE
+    final response = await request.send();
+    if (response.statusCode == 200) {
+      final responseData = await response.stream.toBytes();
+      final responseString = String.fromCharCodes(responseData);
+      final jsonMap = jsonDecode(responseString);
+      // UPDATING IMAGE URL IN FIRESTORE
+      final imageUrl = jsonMap['secure_url'] ?? jsonMap['url'];
+      await sendMessage(chatUser, imageUrl, Type.image);
+    }
   }
 }

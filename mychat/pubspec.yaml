@@ -27,7 +27,8 @@ dependencies:
   image_picker: ^1.2.0
 #  for accessing firebase storage
   firebase_storage: ^13.0.3
-
+# for showing emojis in chat
+  emoji_picker_flutter: ^4.3.0
   cupertino_icons: ^1.0.8
 
 #  to store profile picture
