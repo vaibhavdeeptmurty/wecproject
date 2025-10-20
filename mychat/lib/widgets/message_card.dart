@@ -17,8 +17,8 @@ class _MessageCardState extends State<MessageCard> {
   @override
   Widget build(BuildContext context) {
     return APIs.user.uid == widget.message.fromId
-        ? _receivedMessage()
-        : _sentMessage();
+        ? _sentMessage()
+        : _receivedMessage();
   }
 
   //
