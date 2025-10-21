@@ -233,7 +233,7 @@ class APIs {
     final request = http.MultipartRequest('POST', url)
       ..fields['upload_preset'] = 'chat_image'
       ..fields['folder'] = 'chats/${getConversationId(chatUser.id)}'
-      ..fields['public_id'] = '${DateTime.now().microsecondsSinceEpoch}'
+      ..fields['public_id'] = '${DateTime.now().millisecondsSinceEpoch}'
       ..files.add(await http.MultipartFile.fromPath('file', file.path));
     // UPLOADING IMAGE
     final response = await request.send();
@@ -253,5 +253,13 @@ class APIs {
         .collection('chats/${getConversationId(message.toId)}/messages/')
         .doc(message.sent)
         .delete();
+  }
+
+  //update message
+  static Future<void> updateMessage(Message message, String updatedMsg) async {
+    await firestore
+        .collection('chats/${getConversationId(message.toId)}/messages/')
+        .doc(message.sent)
+        .update({'msg': updatedMsg});
   }
 }

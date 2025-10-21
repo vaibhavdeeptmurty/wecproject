@@ -187,14 +187,16 @@ class _MessageCardState extends State<MessageCard> {
                           color: Colors.blue,
                         ),
                         name: 'Copy Text',
-                        onTap: () {
+                        onTap: (ctx) {
                           Clipboard.setData(
                                   ClipboardData(text: widget.message.msg))
                               .then((value) {
-                            Navigator.of(context)
-                                .pop(); //FOR CLOSING BOTTOM SHEET
-                            Dialogs.showSnackBar(
-                                context, 'Message Copied'); //SHOWING WORK DONE
+                            if (ctx.mounted) {
+                              //for hiding bottom sheet
+                              Navigator.pop(ctx);
+
+                              Dialogs.showSnackBar(ctx, 'Text Copied!');
+                            }
                           });
                         })
                     :
@@ -205,10 +207,19 @@ class _MessageCardState extends State<MessageCard> {
                           color: Colors.blue,
                         ),
                         name: 'Save Image to Gallery',
-                        onTap: () async {
+                        onTap: (ctx) async {
                           try {
                             await GallerySaver.saveImage(widget.message.msg,
-                                albumName: 'MyChat');
+                                    albumName: 'MyChat')
+                                .then((success) {
+                              if (ctx.mounted) {
+                                Navigator.pop(ctx);
+                                if (success != null && success) {
+                                  Dialogs.showSnackBar(
+                                      ctx, 'Image Successfully Saved!');
+                                }
+                              }
+                            });
                           } catch (e) {
                             log('An error occured while saving image: $e');
                             Dialogs.showSnackBar(context, 'An error occured!');
@@ -229,11 +240,11 @@ class _MessageCardState extends State<MessageCard> {
                         color: Colors.red,
                       ),
                       name: 'Delete Message',
-                      onTap: () {
+                      onTap: (ctx) {
                         APIs.deleteMessage(widget.message).then((val) {
                           // HIDINNG BOTTOM SHEET
 
-                          Navigator.pop(context);
+                          if (ctx.mounted) Navigator.pop(ctx);
                         });
                       }),
                 if (widget.message.type == Type.text && isMe)
@@ -244,7 +255,15 @@ class _MessageCardState extends State<MessageCard> {
                         color: Colors.grey,
                       ),
                       name: 'Edit Message',
-                      onTap: () {}),
+                      onTap: (ctx) {
+                        if (ctx.mounted) {
+                          Navigator.pop(ctx);
+                          _showMessageUpdateDialog(ctx);
+
+                          //for hiding bottom sheet
+                          // Navigator.pop(ctx);
+                        }
+                      }),
                 if (isMe)
                   // DIVIDER TO SEPARATE OPTIONS
                   Divider(
@@ -261,7 +280,7 @@ class _MessageCardState extends State<MessageCard> {
                     ),
                     name:
                         'Sent at: ${MyDateUtil.getMessageTime(context, widget.message.sent)}',
-                    onTap: () {}),
+                    onTap: (_) {}),
 
                 // READ AT
                 _OptionItem(
@@ -272,7 +291,7 @@ class _MessageCardState extends State<MessageCard> {
                     name: widget.message.read.isEmpty
                         ? 'Read At: Not seen yet'
                         : 'Read At: ${MyDateUtil.getMessageTime(context, widget.message.read)}',
-                    onTap: () {}),
+                    onTap: (_) {}),
                 const SizedBox(
                   height: 10,
                 )
@@ -281,19 +300,86 @@ class _MessageCardState extends State<MessageCard> {
           );
         });
   }
+
+//   DIALOG FOR UPDATING CHAT MESSAGE
+  void _showMessageUpdateDialog(final BuildContext ctx) {
+    String updatedMsg = widget.message.msg;
+
+    showDialog(
+        context: ctx,
+        builder: (dialogContext) => AlertDialog(
+              contentPadding: const EdgeInsets.only(
+                  left: 24, right: 24, top: 20, bottom: 10),
+
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20))),
+
+              //title
+              title: const Row(
+                children: [
+                  Icon(
+                    Icons.message,
+                    color: Colors.blue,
+                    size: 28,
+                  ),
+                  Text(' Update Message')
+                ],
+              ),
+
+              //content
+              content: TextFormField(
+                initialValue: updatedMsg,
+                maxLines: null,
+                onChanged: (value) => updatedMsg = value,
+                decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(15)))),
+              ),
+
+              //actions
+              actions: [
+                //cancel button
+                MaterialButton(
+                    onPressed: () {
+                      //hide alert dialog
+
+                      Navigator.pop(dialogContext);
+                    },
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Colors.blue, fontSize: 16),
+                    )),
+
+                //update button
+                MaterialButton(
+                    onPressed: () {
+                      APIs.updateMessage(widget.message, updatedMsg);
+                      //hide alert dialog
+                      Navigator.pop(dialogContext);
+
+                      //for hiding bottom sheet
+                      Navigator.pop(ctx);
+                    },
+                    child: const Text(
+                      'Update',
+                      style: TextStyle(color: Colors.blue, fontSize: 16),
+                    ))
+              ],
+            ));
+  }
 }
 
 class _OptionItem extends StatelessWidget {
   final Icon icon;
   final String name;
-  final VoidCallback onTap;
+  final Function(BuildContext) onTap;
   const _OptionItem(
       {super.key, required this.icon, required this.name, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => onTap(),
+      onTap: () => onTap(context),
       child: Padding(
         padding: EdgeInsets.only(
             left: mq.width * 0.02,

@@ -35,6 +35,10 @@ dependencies:
 #  for storing images o gallery
   gallery_saver_plus: ^3.2.9
 
+#  for location sharing
+  google_maps_flutter: ^2.13.1
+  location: ^8.0.1
+  flutter_polyline_points: ^3.1.0
 
 
   cupertino_icons: ^1.0.8
