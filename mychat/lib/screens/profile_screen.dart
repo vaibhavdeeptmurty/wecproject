@@ -199,6 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // SELECT IMAGE OPTIONS
   void _showBottomSheet() {
     showModalBottomSheet(
         context: context,

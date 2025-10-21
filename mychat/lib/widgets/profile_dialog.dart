@@ -13,7 +13,7 @@ class ProfileDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      contentPadding: EdgeInsets.all(0),
+      contentPadding: const EdgeInsets.all(0),
       backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       content: SizedBox(
@@ -52,8 +52,8 @@ class ProfileDialog extends StatelessWidget {
             Align(
                 alignment: Alignment.topRight,
                 child: MaterialButton(
-                  shape: CircleBorder(),
-                  padding: EdgeInsets.all(0),
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(0),
                   minWidth: 0,
                   onPressed: () {
                     Navigator.pop(context);

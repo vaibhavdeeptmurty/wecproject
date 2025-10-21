@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:mychat/models/chat_user.dart';
 import 'package:mychat/models/message.dart';
@@ -14,10 +15,43 @@ class APIs {
   static FirebaseAuth auth = FirebaseAuth.instance;
   //FIREBASE DATABASE
   static FirebaseFirestore firestore = FirebaseFirestore.instance;
+// FOR PUSH NOTIFICATIONS FROM FIREBASE
+  static FirebaseMessaging fMessaging = FirebaseMessaging.instance;
+//   FOR GETTING FIREBASE MESSAGE TOKEN
+  static Future<void> getFirebaseMessagingToken() async {
+    await fMessaging.requestPermission();
+
+    await fMessaging.getToken().then((t) {
+      if (t != null) {
+        me.pushToken = t;
+      }
+    });
+  }
 
 //   CHECK IF USER EXIST
   static Future<bool> userExists() async {
     return (await firestore.collection('users').doc(user.uid).get()).exists;
+  }
+
+  //   FOR ADDING CHAT USER FOR OUR COVERSATION
+  static Future<bool> addChatUserExists(String email) async {
+    final data = await firestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (data.docs.isNotEmpty && data.docs.first.id != user.uid) {
+      firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('my_chats')
+          .doc(data.docs.first.id)
+          .set({});
+
+      return true;
+    } else {
+      return false;
+    }
   }
 
 //   RETURN CURRENT USER
@@ -31,6 +65,9 @@ class APIs {
         .then((user) async {
       if (user.exists) {
         me = ChatUser.fromJson(user.data()!);
+        await getFirebaseMessagingToken();
+        // FOR SETTING USER STATUS TO ACTIVE
+        APIs.updateActiveStatus(true);
       } else {
         await createUser().then((value) => getSelfInfo());
       }
@@ -57,12 +94,38 @@ class APIs {
         .set(chatUser.toJson());
   }
 
-  // FOR GETTING ALL USERS FROM FIREBASE DATABASE
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers() {
+  // FOR GETTING ALL KNOW USERS ID FROM FIREBASE DATABASE
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getMyUsersId() {
     return firestore
         .collection('users')
-        .where('id', isNotEqualTo: user.uid)
+        .doc(user.uid)
+        .collection('my_chats')
         .snapshots();
+  }
+
+  // FOR GETTING ALL USERS FROM FIREBASE DATABASE
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers(
+      List<String> userIds) {
+    if (userIds.isNotEmpty) {
+      return firestore
+          .collection('users')
+          .where('id', whereIn: userIds)
+          .snapshots();
+    } else {
+      // Return an empty stream instead of querying Firestore
+      return const Stream.empty();
+    }
+  }
+
+  //FOR ADDING USER TO MY USER WHEN FIRST MSG IS SENT
+  static Future<void> sendFirstMessage(
+      ChatUser chatUser, String msg, Type type) async {
+    await firestore
+        .collection('users')
+        .doc(chatUser.id)
+        .collection('my_chats')
+        .doc(user.uid)
+        .set({}).then((value) => sendMessage(chatUser, msg, type));
   }
 
   // FOR UPDATING USER INFO
@@ -106,7 +169,8 @@ class APIs {
   static Future<void> updateActiveStatus(bool isOnline) async {
     firestore.collection('users').doc(user.uid).update({
       'is_online': isOnline,
-      'last_active': DateTime.now().millisecondsSinceEpoch.toString()
+      'last_active': DateTime.now().millisecondsSinceEpoch.toString(),
+      'push_token': me.pushToken
     });
   }
 
@@ -181,5 +245,13 @@ class APIs {
       final imageUrl = jsonMap['secure_url'] ?? jsonMap['url'];
       await sendMessage(chatUser, imageUrl, Type.image);
     }
+  }
+
+//   DELETE MESSAGE FROM FIREBASE
+  static Future<void> deleteMessage(Message message) async {
+    firestore
+        .collection('chats/${getConversationId(message.toId)}/messages/')
+        .doc(message.sent)
+        .delete();
   }
 }

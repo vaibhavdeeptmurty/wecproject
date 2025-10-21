@@ -77,11 +77,16 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
                     'About: ',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                   ),
-                  Text(
-                    widget.user.about,
-                    style: TextStyle(
-                        fontSize: 18,
-                        color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(
+                    width: 3,
+                  ),
+                  Expanded(
+                    child: Text(
+                      widget.user.about,
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Theme.of(context).colorScheme.primary),
+                    ),
                   )
                 ],
               )

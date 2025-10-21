@@ -7,6 +7,25 @@ class MyDateUtil {
     return TimeOfDay.fromDateTime(date).format(context);
   }
 
+  //GET FORMATTED TIME FOR SEEN AND READ MESSAGE TIME
+  static String getMessageTime(
+    BuildContext context,
+    String time,
+  ) {
+    final DateTime sent = DateTime.fromMillisecondsSinceEpoch(int.parse(time));
+    final DateTime now = DateTime.now();
+
+    final formattedTime = TimeOfDay.fromDateTime(sent).format(context);
+    if (now.day == sent.day &&
+        now.month == sent.month &&
+        now.year == sent.year) {
+      return formattedTime;
+    }
+    return now.year == sent.year
+        ? '$formattedTime - ${sent.day} ${_getMonth(sent)}'
+        : '$formattedTime - ${sent.day} ${_getMonth(sent)} ${sent.year}';
+  }
+
   // GET LAST MESSAGE TIME(USED IN CHAT USER CARD)
   static String getLastMessageTime(BuildContext context, String time,
       {bool showYear = false}) {

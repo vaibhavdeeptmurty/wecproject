@@ -222,6 +222,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                         controller: _textController,
+                        textCapitalization: TextCapitalization.sentences,
                         onTap: () {
                           if (_showEmojis) {
                             setState(() => _showEmojis = !_showEmojis);
@@ -277,7 +278,15 @@ class _ChatScreenState extends State<ChatScreen> {
           MaterialButton(
             onPressed: () {
               if (_textController.text.isNotEmpty) {
-                APIs.sendMessage(widget.user, _textController.text, Type.text);
+                if (_list.isEmpty) {
+                  // ON FIRST MESSAGE ADD USER TO MY USER COLLECTION
+                  APIs.sendFirstMessage(
+                      widget.user, _textController.text, Type.text);
+                } else {
+                  // REGULAR SEND MSG FN.
+                  APIs.sendMessage(
+                      widget.user, _textController.text, Type.text);
+                }
                 _textController.text = '';
               }
             },
