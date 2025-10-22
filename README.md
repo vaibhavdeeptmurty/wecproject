@@ -1,7 +1,7 @@
 # NativeChatApp
 
 A real-time chat application built using **React Native / Flutter** with **Firebase** backend services. This app supports user authentication, real-time messaging, presence indicators, & read receipts.
-
+M A D E    B Y   V A I B H A V    W I T H   🩷 
 ---
 
 ## Table of Contents
