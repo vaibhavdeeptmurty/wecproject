@@ -221,8 +221,8 @@ class _MessageCardState extends State<MessageCard> {
                               }
                             });
                           } catch (e) {
-                            log('An error occured while saving image: $e');
-                            Dialogs.showSnackBar(context, 'An error occured!');
+                            log('An error occurred while saving image: $e');
+                            Dialogs.showSnackBar(context, 'An error occurred!');
                           }
                         }),
 
@@ -242,7 +242,7 @@ class _MessageCardState extends State<MessageCard> {
                       name: 'Delete Message',
                       onTap: (ctx) {
                         APIs.deleteMessage(widget.message).then((val) {
-                          // HIDINNG BOTTOM SHEET
+                          // HIDING BOTTOM SHEET
 
                           if (ctx.mounted) Navigator.pop(ctx);
                         });
