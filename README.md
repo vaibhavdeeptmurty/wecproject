@@ -51,8 +51,12 @@ NativeChatApp is a cross-platform mobile application enabling real-time one-on-o
 
 4. **Read Receipts**  
    - Sent: Message timestamp shown (no tick)  
-   - Read: Double blue tick with timestamp  
-
+   - Read: Double blue tick with timestamp
+     
+5. **Typing Indicator (Bonus)**
+   - Show "typing..." when the other user is composing
+   - Real-time updates via Firebase
+   - Auto-hide on typing stop
 
 ---
 
@@ -66,14 +70,14 @@ NativeChatApp is a cross-platform mobile application enabling real-time one-on-o
 
 ## Dependencies
 ###    for Firebase
-  -firebase_core: ^4.2.0
+  - firebase_core: ^4.2.0
 ###  for Firebase Auth
-  firebase_auth: ^6.1.1
+ - firebase_auth: ^6.1.1
 ### for Google sign-in
 -  using old version because I was unable to resolve the error GoogleSignInException(code GoogleSignInExceptionCode.clientConfigurationError, serverClientId must be provided on Android, null)
 - google_sign_in: ^5.4.2
 ###  cloud firestore database
-  cloud_firestore: ^6.0.3
+ - cloud_firestore: ^6.0.3
 ### for user profile picture
 -  path_provider: ^2.1.5
 -  cached_network_image: ^3.4.1
@@ -90,10 +94,12 @@ NativeChatApp is a cross-platform mobile application enabling real-time one-on-o
 ###  to store profile picture
 -  cloudinary_flutter: ^1.3.0
 -  cloudinary_url_gen: ^1.8.0
+### to combine two stream(users and chats to chat screen for showing chatUser detail with typing)
+- rxdart: ^0.27.7
 
 ## Notes
-  -Firestore Storage needed me to go premium, which is why I am using Cloudinary for storing images.
-  -I was unable to resolve the error while using Polylines, which is why I have not added the Live location feature. On pub.dev, the documentation is outdated and no longer works for newer versions. If I use the old version, I would need to reduce the versions of many dependencies and change the code accordingly.
+  - Firestore Storage needed me to go premium, which is why I am using Cloudinary for storing images.
+  - I was unable to resolve the error while using Polylines, which is why I have not added the Live location feature. On pub.dev, the documentation is outdated and no longer works for newer versions. If I use the old version, I would need to reduce the versions of many dependencies and change the code accordingly.
  
 
 ## Mentors
