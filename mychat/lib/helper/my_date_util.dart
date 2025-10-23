@@ -77,7 +77,7 @@ class MyDateUtil {
   static String getLastActiveTime(BuildContext context, String lastActive) {
     final int i = int.tryParse(lastActive) ?? -1;
     //   IF TIME IS NOT AVAILABLE THEN RETURN BELOW STATEMENT
-    if (i == -1) return 'Last seen not available';
+    if (i == -1) return 'recently';
 
     DateTime time = DateTime.fromMillisecondsSinceEpoch(i);
     DateTime now = DateTime.now();

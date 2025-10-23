@@ -132,12 +132,29 @@ class _ChatScreenState extends State<ChatScreen> {
                 builder: (_) => ViewProfileScreen(user: widget.user)));
       },
       child: StreamBuilder(
-        stream: APIs.getUserInfo(widget.user),
+        stream: APIs.combinesUserInfo(widget.user),
         builder: (context, snapshot) {
-          final data = snapshot.data?.docs;
-          final list =
-              data?.map((e) => ChatUser.fromJson(e.data())).toList() ?? [];
+          if (!snapshot.hasData || snapshot.data == null) {
+            // while loading or null, return an empty/skeleton UI
+            return const SizedBox();
+          }
+          final data = snapshot.data!;
+          final isTyping = data['isTyping'] ?? false;
+          final isOnline = data['is_online'] ?? false;
+          final name = data['name'] ?? '';
+          final image = data['image'] ?? '';
+          final lastActive = data['last_active'] ?? '';
 
+          String statusText;
+          if (isTyping) {
+            statusText = 'typing...';
+          } else if (isOnline) {
+            statusText = 'Online';
+          } else if (lastActive == null) {
+            statusText = 'recently';
+          } else {
+            statusText = '${MyDateUtil.getLastActiveTime(context, lastActive)}';
+          }
           return Row(
             children: [
               // BACK BTN
@@ -148,13 +165,13 @@ class _ChatScreenState extends State<ChatScreen> {
                 icon: const Icon(Icons.arrow_back_ios_new),
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              //
+
               // USER PROFILE PICTURE
               ClipOval(
                 child: CachedNetworkImage(
                   width: mq.height * 0.045,
                   height: mq.height * 0.045,
-                  imageUrl: list.isNotEmpty ? list[0].image : widget.user.image,
+                  imageUrl: image.isNotEmpty ? image : (widget.user.image),
                   errorWidget: (context, url, error) =>
                       const Icon(CupertinoIcons.person),
                 ),
@@ -164,26 +181,21 @@ class _ChatScreenState extends State<ChatScreen> {
                 width: 10,
               ),
               // NAME OF USER
+
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    list.isNotEmpty ? list[0].name : widget.user.name,
+                    name.isNotEmpty ? name : widget.user.name,
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Theme.of(context).colorScheme.tertiary),
                   ),
-                  // LAST SEEN/TYPING
+                  // LAST SEEN/TYPING/Online
                   Text(
-                    list.isNotEmpty
-                        ? list[0].isOnline
-                            ? 'online'
-                            : MyDateUtil.getLastActiveTime(
-                                context, list[0].lastActive)
-                        : MyDateUtil.getLastActiveTime(
-                            context, widget.user.lastActive),
+                    statusText,
                     style: const TextStyle(
                       fontSize: 14,
                     ),
@@ -222,6 +234,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                         controller: _textController,
+                        onChanged: (val) => APIs.onUserTyping(widget.user),
                         textCapitalization: TextCapitalization.sentences,
                         onTap: () {
                           if (_showEmojis) {
@@ -236,37 +249,12 @@ class _ChatScreenState extends State<ChatScreen> {
                             hintStyle: TextStyle(
                                 color: Theme.of(context).colorScheme.primary))),
                   ),
-                  // GALLERY BTN
+                  // ATTACHMENT BTN
                   IconButton(
-                    onPressed: () async {
-                      final ImagePicker picker = ImagePicker();
-                      // PICK SINGLE/MULTIPLE IMAGE(S).
-                      final List<XFile> images =
-                          await picker.pickMultiImage(imageQuality: 70);
-                      //  UPLOADING AND SENDING IMAGE ONE BY ONE
-                      for (var i in images) {
-                        setState(() => _isUploading = true);
-                        await APIs.sendChatImage(widget.user, File(i.path));
-                        setState(() => _isUploading = false);
-                      }
+                    onPressed: () {
+                      _attchmentBottomSheet();
                     },
-                    icon: const Icon(Icons.image),
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                  // CAMERA BTN
-                  IconButton(
-                    onPressed: () async {
-                      final ImagePicker picker = ImagePicker();
-                      // Pick an image.
-                      final XFile? image = await picker.pickImage(
-                          source: ImageSource.camera, imageQuality: 70);
-                      if (image != null) {
-                        setState(() => _isUploading = true);
-                        await APIs.sendChatImage(widget.user, File(image.path));
-                        setState(() => _isUploading = false);
-                      }
-                    },
-                    icon: const Icon(Icons.camera_alt),
+                    icon: const Icon(Icons.attach_file),
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                 ],
@@ -303,5 +291,86 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
     );
+  }
+
+  // BOTTOM SHEET FOR ATTACHMENTS
+  void _attchmentBottomSheet() {
+    showModalBottomSheet(
+        context: context,
+        builder: (_) {
+          return ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.only(
+                top: mq.height * 0.03, bottom: mq.height * 0.05),
+            children: [
+              Text(
+                'Pick attachment',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.primary),
+              ),
+              // FOR EXTRA SPACE
+              SizedBox(
+                height: mq.height * 0.02,
+              ),
+              // BUTTONS TO SELECT IMAGE
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // GALLERY BTN
+                  IconButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      final ImagePicker picker = ImagePicker();
+                      // PICK SINGLE/MULTIPLE IMAGE(S).
+                      final List<XFile> images =
+                          await picker.pickMultiImage(imageQuality: 70);
+                      //  UPLOADING AND SENDING IMAGE ONE BY ONE
+                      for (var i in images) {
+                        setState(() => _isUploading = true);
+                        await APIs.sendChatImage(widget.user, File(i.path));
+                        setState(() => _isUploading = false);
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.image,
+                      size: 50,
+                    ),
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                  // CAMERA BTN
+                  IconButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      final ImagePicker picker = ImagePicker();
+                      // Pick an image.
+                      final XFile? image = await picker.pickImage(
+                          source: ImageSource.camera, imageQuality: 70);
+                      if (image != null) {
+                        setState(() => _isUploading = true);
+                        await APIs.sendChatImage(widget.user, File(image.path));
+                        setState(() => _isUploading = false);
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.camera_alt,
+                      size: 50,
+                    ),
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                  IconButton(
+                      onPressed: () {},
+                      color: Theme.of(context).colorScheme.secondary,
+                      icon: const Icon(
+                        Icons.location_on,
+                        size: 50,
+                      ))
+                ],
+              )
+            ],
+          );
+        });
   }
 }

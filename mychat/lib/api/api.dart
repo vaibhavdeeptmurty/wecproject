@@ -1,3 +1,4 @@
+import 'dart:async' as asc;
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:mychat/models/chat_user.dart';
 import 'package:mychat/models/message.dart';
+import 'package:rxdart/rxdart.dart';
 
 class APIs {
   // STORING SELF INFO
@@ -157,12 +159,28 @@ class APIs {
   }
 
   // GETTING SPECIFIC USER INFO
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(
-      ChatUser chatUser) {
-    return firestore
-        .collection('users')
-        .where('id', isEqualTo: chatUser.id)
+  static Stream<Map<String, dynamic>> combinesUserInfo(ChatUser chatUser) {
+    final userDoc = firestore.collection('users').doc(chatUser.id).snapshots();
+    final typingDoc = firestore
+        .collection('chats')
+        .doc(getConversationId(chatUser.id))
+        .collection('typing')
+        .doc(chatUser.id)
         .snapshots();
+
+    return Rx.combineLatest2(
+      userDoc,
+      typingDoc,
+      (userSnap, typingSnap) {
+        final userData = userSnap.data() ?? {};
+        final typingData = typingSnap.data() ?? {};
+
+        final merged = <String, dynamic>{};
+        merged.addAll(userData);
+        merged['isTyping'] = typingData['isTyping'] ?? false;
+        return merged;
+      },
+    );
   }
 
   // UPDATE ONLINE / LAST ACTIVE STATUS OF USER
@@ -255,11 +273,29 @@ class APIs {
         .delete();
   }
 
-  //update message
+  //UPDATE MESSAGE
   static Future<void> updateMessage(Message message, String updatedMsg) async {
     await firestore
         .collection('chats/${getConversationId(message.toId)}/messages/')
         .doc(message.sent)
         .update({'msg': updatedMsg});
+  }
+
+  //SET TYPING STATUS
+  static Future<void> setTypingStatus(ChatUser chatUser, bool isTyping) async {
+    await firestore
+        .collection('chats/${getConversationId(chatUser.id)}/typing')
+        .doc(user.uid)
+        .set({'isTyping': isTyping});
+  }
+
+  static asc.Timer? typingTimer;
+  static void onUserTyping(ChatUser chatUser) {
+    setTypingStatus(chatUser, true);
+
+    // STOP TYPING AFTER 2 SEC OF INACTIVITY
+    typingTimer = asc.Timer(const Duration(seconds: 2), () {
+      setTypingStatus(chatUser, false);
+    }) as asc.Timer?;
   }
 }
