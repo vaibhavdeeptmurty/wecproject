@@ -1,6 +1,6 @@
 # NativeChatApp [MYCHAT]
 
-A real-time chat application built using **React Native / Flutter** with **Firebase** backend services. This app supports user authentication, real-time messaging, presence indicators, & read receipts.
+A real-time chat application built using **Flutter** with **Firebase** backend services. This app supports user authentication, real-time messaging, presence indicators, & read receipts.
 <br>
 <br>
 <p align="center">
@@ -16,7 +16,9 @@ A real-time chat application built using **React Native / Flutter** with **Fireb
 - [Tech Stack](#tech-stack)    
 - [Dependencies](#dependencies)  
 - [Notes](#notes)  
-- [Mentors](#mentors)  
+- [Resourses](#resourses)
+- [Mentors](#mentors)
+  
 
 ---
 
@@ -29,7 +31,7 @@ NativeChatApp is a cross-platform mobile application enabling real-time one-on-o
 - Real-time messaging with persistent chat history  
 - Online/offline presence and last seen timestamps  
 - Message status indicators (sent, delivered, read)   
-- No custom backend required — fully powered by Firebase
+- Powered by Firebase
 
 ---
 
@@ -63,8 +65,7 @@ NativeChatApp is a cross-platform mobile application enabling real-time one-on-o
 ## Tech Stack
 
 - **Frontend:**  Flutter  
-- **Backend:** Firebase (Authentication, Firestore, Cloudinary Storage)  
- 
+- **Backend:** Firebase (Authentication, Firestore), Cloudinary Storage 
 
 ---
 
@@ -97,11 +98,23 @@ NativeChatApp is a cross-platform mobile application enabling real-time one-on-o
 ### to combine two stream(users and chats to chat screen for showing chatUser detail with typing)
 - rxdart: ^0.27.7
 
+---
+
 ## Notes
   - Firestore Storage needed me to go premium, which is why I am using Cloudinary for storing images.
   - I was unable to resolve the error while using Polylines, which is why I have not added the Live location feature. On pub.dev, the documentation is outdated and no longer works for newer versions. If I use the old version, I would need to reduce the versions of many dependencies and change the code accordingly.
- 
+
+---
+
+## Resourses 
+- [Mitch Koko - Youtube](https://www.youtube.com/watch?v=5xU5WH2kEc0)
+- [Harsh H. Rajpurohit - Youtube](https://www.youtube.com/@harshRajpurohit)
+- [Cloudinary Docs.](https://cloudinary.com/documentation/flutter_integration)
+- [Google Developer - Youtube](https://www.youtube.com/@GoogleDevelopers)
+- [freeCodeCamp.org - Youtube](https://www.youtube.com/watch?v=VPvVD8t02U8)
+  
+---
 
 ## Mentors
-  -[Kushagra Tiwari ](https://github.com/Kushagra1122/)(+91 8318661731)
-  -[Nishant AS](https://github.com/NishantAS/)(+91 6360219728)
+- [Kushagra Tiwari ](https://github.com/Kushagra1122/)(+91 8318661731)
+- [Nishant AS](https://github.com/NishantAS/)(+91 6360219728)
